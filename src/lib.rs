@@ -1,18 +1,20 @@
 use std::io::{self, Write};
+use rand::{self,Rng};
 
-
-static STARTING_KEYS : &[&str] = &["Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#"];
+static C_MAJOR : &[&str] = &["C", "D", "E", "F", "G", "A", "B"];
 static IONIAN_INTERVALS  : &[u32] = &[0,2,4,5,7,9,11];
-static C_MAJOR_NOTES  : &[&str] = &["C", "D", "E", "F", "G", "A", "B"];
 
-fn get_random_key<'a>() -> &'a str{
-    "asd"
-}
-
-fn get_interval<'a>() -> (&'a str, &'a str, &'a str){
-    let note = get_random_key();
+fn get_interval<'a, R: Rng + ?Sized>(rng: &mut R) -> (&'a str, &'a str, i32){
+    let root_idx: usize = rng.random_range(0..=6);
+    let targ_idx: usize = rng.random_range(0..=6);
     
-    return ("C", "Gb", "b5")
+    let root_note = &C_MAJOR.get(root_idx).unwrap();
+    let targ_note = &C_MAJOR.get(targ_idx).unwrap();
+
+//    let note_dist = (targ_idx - root_idx) % 8;
+    let interval_dist: i32 = (IONIAN_INTERVALS[targ_idx]  as i32 - IONIAN_INTERVALS[root_idx]  as i32).rem_euclid(12);
+
+    return (root_note, targ_note, interval_dist)
 }
 
 fn get_input(input: &mut String) -> &str{
@@ -28,8 +30,11 @@ fn get_input(input: &mut String) -> &str{
 
 pub fn game_loop() -> Result<(), &'static str>{
     let mut input = String::new();
+    let mut rng = rand::rng();
     loop {
+        let (root, targ, interval) : (&str, &str, i32) = get_interval(&mut rng);
         
+        println!("{} - {} - {}", root, targ, interval);
         
         let trimmed = get_input(&mut input); 
         if trimmed == "exit"{
