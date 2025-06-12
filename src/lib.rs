@@ -1,10 +1,41 @@
 use rand::{Rng, rng};
 use std::io::{self, Write};
+use std::collections::HashMap;
 
 static C_MAJOR: &[&str] = &["C", "D", "E", "F", "G", "A", "B"];
 static IONIAN_INTERVALS: &[u32] = &[0, 2, 4, 5, 7, 9, 11];
 
-fn get_interval<R: Rng + ?Sized>(rng: &mut R) -> (&'static str, &'static str, i32) {
+fn build_interval_map() -> HashMap<(i32, i32), &'static str> {
+    let mut interval_map = HashMap::new();
+
+    interval_map.insert((0, 0), "1");
+
+    interval_map.insert((1, 1), "b2");
+    interval_map.insert((1, 2), "2");
+    interval_map.insert((1, 3), "#2");
+
+    interval_map.insert((2, 3), "b3");
+    interval_map.insert((2, 4), "3");
+    interval_map.insert((2, 5), "#3");
+
+    interval_map.insert((3, 5), "4");
+    interval_map.insert((3, 6), "#4");
+
+    interval_map.insert((4, 6), "b5");
+    interval_map.insert((4, 7), "5");
+    interval_map.insert((4, 8), "#5");
+
+    interval_map.insert((5, 8), "b6");
+    interval_map.insert((5, 9), "6");
+    interval_map.insert((5, 10), "#6");
+
+    interval_map.insert((6, 10), "b7");
+    interval_map.insert((6, 11), "7");
+
+    interval_map
+}
+
+fn get_interval<R: Rng + ?Sized>(rng: &mut R, map: &HashMap<(i32, i32), &'static str>) -> (&'static str, &'static str, &'static str) {
     let root_idx = rng.random_range(0..=6);
     let targ_idx = rng.random_range(0..=6);
 
@@ -13,8 +44,12 @@ fn get_interval<R: Rng + ?Sized>(rng: &mut R) -> (&'static str, &'static str, i3
 
     let interval_dist =
         (IONIAN_INTERVALS[targ_idx] as i32 - IONIAN_INTERVALS[root_idx] as i32).rem_euclid(12);
+       
+    let note_dist = (targ_idx as i32 - root_idx as i32).rem_euclid(7);
 
-    (root_note, targ_note, interval_dist)
+    let interval = map.get(&(note_dist, interval_dist)).unwrap();
+
+    (root_note, targ_note, interval)
 }
 
 fn get_input(input: &mut String) -> io::Result<&str> {
@@ -28,9 +63,10 @@ fn get_input(input: &mut String) -> io::Result<&str> {
 pub fn game_loop() -> io::Result<()> {
     let mut input = String::new();
     let mut rng = rng();
+    let map = build_interval_map();
 
     loop {
-        let (root, targ, interval) = get_interval(&mut rng);
+        let (root, targ, interval) = get_interval(&mut rng, &map);
         println!("{} - {} - {}", root, targ, interval);
 
         match get_input(&mut input)? {
