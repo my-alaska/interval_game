@@ -60,24 +60,39 @@ fn get_input(input: &mut String) -> io::Result<&str> {
     Ok(input.trim_end())
 }
 
+fn wait_for_enter() -> io::Result<()> {
+    let mut dummy = String::new();
+    print!("Press Enter to continue...");
+    io::stdout().flush()?; // Ensure the message is displayed before waiting
+    io::stdin().read_line(&mut dummy)?; // Waits for user to press enter
+    Ok(())
+}
+
 pub fn game_loop() -> io::Result<()> {
     let mut input = String::new();
     let mut rng = rng();
     let map = build_interval_map();
 
     loop {
-        let (root, targ, interval) = get_interval(&mut rng, &map);
-        println!("{} - {} - {}", root, targ, interval);
+        let (root, target, interval) = get_interval(&mut rng, &map);
+        println!("\n===================");
+        println!("Your root : {}", root);
+        println!("Interval  : {}", interval);
+        println!("What is the note?");
 
-        match get_input(&mut input)? {
-            "exit" => {
-                println!("Thanks for playing!");
-                break;
-            }
-            trimmed => {
-                println!("Your input: \"{}\"\n", trimmed);
-            }
+        let trimmed = get_input(&mut input)?; 
+        if trimmed == "exit"{
+            println!("Thanks for playing!\n");
+            break;
         }
+        
+        if trimmed.to_lowercase() == target.to_lowercase(){
+            println!("Correct answer!")
+        } else {
+            println!("Wrong. Correct answer is {}",target);
+        }
+        println!("===================\n");
+        wait_for_enter()?;
     }
 
     Ok(())
