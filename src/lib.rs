@@ -1,7 +1,7 @@
-use rand::{Rng, rng};
-use std::io::{self, Write};
-use std::collections::HashMap;
 use once_cell::sync::Lazy;
+use rand::{rng, Rng};
+use std::collections::HashMap;
+use std::io::{self, Write};
 
 static INTERVAL_MAP: Lazy<HashMap<(i32, i32), &'static str>> = Lazy::new(|| {
     let mut map = HashMap::new();
@@ -50,25 +50,25 @@ static MAJOR_SCALES: &[&[&str]] = &[
     &["F#", "G#", "A#", "B", "C#", "D#", "E#"], //F# major
 ];
 
-fn get_random_scale() -> &'static[&'static str]{
+static IONIAN_INTERVALS: &[u32] = &[0, 2, 4, 5, 7, 9, 11];
+
+fn get_random_scale() -> &'static [&'static str] {
     let mut rng = rng();
     let random_index = rng.random_range(0..=12);
-    
+
     MAJOR_SCALES[random_index]
 }
 
-static IONIAN_INTERVALS: &[u32] = &[0, 2, 4, 5, 7, 9, 11];
-
 fn get_interval() -> (&'static str, &'static str, &'static str) {
     let mut rng = rng();
-    
+
     // Genet a random major scale
     let major_scale = get_random_scale();
     println!("Your scale: {} major", major_scale[0]);
-    
+
     // Random index of a degree of the major scale
     let root_idx = rng.random_range(0..=6);
-    
+
     // Select a different note to compare with
     let targ_idx = (root_idx + rng.random_range(1..=6)) % 7;
 
@@ -77,11 +77,12 @@ fn get_interval() -> (&'static str, &'static str, &'static str) {
     let targ_note = major_scale[targ_idx];
 
     // Get distance between notes in semitones
-    let interval_dist = (IONIAN_INTERVALS[targ_idx] as i32 - IONIAN_INTERVALS[root_idx] as i32).rem_euclid(12);
-    
+    let interval_dist =
+        (IONIAN_INTERVALS[targ_idx] as i32 - IONIAN_INTERVALS[root_idx] as i32).rem_euclid(12);
+
     // Get the distance between the scale degrees
     let note_dist = (targ_idx as i32 - root_idx as i32).rem_euclid(7);
-    
+
     // Extract the interval as text
     let interval = INTERVAL_MAP.get(&(note_dist, interval_dist)).unwrap();
 
@@ -109,33 +110,33 @@ pub fn game_loop() -> io::Result<()> {
 
     loop {
         println!("\n===================");
-        
+
         // Get two notes and interval between them to make a question
         let (root, target, interval) = get_interval();
-        
+
         // Print the question
         println!("Your root : {}", root);
         println!("Interval  : {}", interval);
         println!("What is the note?");
 
         // Get user input
-        let trimmed_input = get_input(&mut input)?; 
+        let trimmed_input = get_input(&mut input)?;
         if trimmed_input == "exit" {
             break;
         }
-        
-        // Wait for he 
-        if trimmed_input.to_lowercase() == target.to_lowercase(){
+
+        // Wait for he
+        if trimmed_input.to_lowercase() == target.to_lowercase() {
             println!("Correct answer!")
         } else {
-            println!("Wrong. Correct answer is {}",target);
+            println!("Wrong. Correct answer is {}", target);
         }
         println!("===================\n");
-        
+
         // Give the user some time to evaluate the correct answer
         wait_for_enter()?;
     }
-    
+
     println!("Thanks for playing!\n");
     Ok(())
 }
