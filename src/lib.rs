@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use rand::{rng, Rng};
+use rand::{Rng, rng};
 use std::collections::HashMap;
 use std::io::{self, Write};
 
