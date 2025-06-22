@@ -59,7 +59,13 @@ fn get_random_scale() -> &'static [&'static str] {
     MAJOR_SCALES[random_index]
 }
 
-fn get_interval() -> (&'static str, &'static str, &'static str) {
+struct MusicalInterval<'a> {
+    root: &'a str,
+    target: &'a str,
+    interval: &'a str
+}
+
+fn get_interval() -> MusicalInterval<'static> {
     let mut rng = rng();
 
     // Genet a random major scale
@@ -73,8 +79,8 @@ fn get_interval() -> (&'static str, &'static str, &'static str) {
     let targ_idx = (root_idx + rng.random_range(1..=6)) % 7;
 
     // Extract the notes as text
-    let root_note = major_scale[root_idx];
-    let targ_note = major_scale[targ_idx];
+    let root = major_scale[root_idx];
+    let target = major_scale[targ_idx];
 
     // Get distance between notes in semitones
     let interval_dist =
@@ -86,7 +92,7 @@ fn get_interval() -> (&'static str, &'static str, &'static str) {
     // Extract the interval as text
     let interval = INTERVAL_MAP.get(&(note_dist, interval_dist)).unwrap();
 
-    (root_note, targ_note, interval)
+    MusicalInterval{root, target, interval}
 }
 
 fn get_input(input: &mut String) -> io::Result<&str> {
@@ -112,11 +118,11 @@ pub fn game_loop() -> io::Result<()> {
         println!("\n===================");
 
         // Get two notes and interval between them to make a question
-        let (root, target, interval) = get_interval();
+        let interval = get_interval();
 
         // Print the question
-        println!("Your root : {}", root);
-        println!("Interval  : {}", interval);
+        println!("Your root : {}", interval.root);
+        println!("Interval  : {}", interval.interval);
         println!("What is the note?");
 
         // Get user input
@@ -126,10 +132,10 @@ pub fn game_loop() -> io::Result<()> {
         }
 
         // Wait for he
-        if trimmed_input.to_lowercase() == target.to_lowercase() {
+        if trimmed_input.to_lowercase() == interval.target.to_lowercase() {
             println!("Correct answer!")
         } else {
-            println!("Wrong. Correct answer is {}", target);
+            println!("Wrong. Correct answer is {}", interval.target);
         }
         println!("===================\n");
 
